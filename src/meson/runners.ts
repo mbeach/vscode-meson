@@ -44,13 +44,20 @@ export async function runMesonConfigure(source: string, build: string) {
         const configureOpts = extensionConfiguration("configureOptions").join(
           " "
         );
-        const { stdout, stderr } = await exec(
-          `meson ${configureOpts} ${build}`,
-          { cwd: source }
-        );
-        getOutputChannel().appendLine(stdout);
-        getOutputChannel().appendLine(stderr);
-        if (stderr.length > 0) getOutputChannel().show(true);
+        try {
+          const { stdout, stderr } = await exec(
+            `meson ${configureOpts} ${build}`,
+            { cwd: source }
+          );
+          getOutputChannel().appendLine(stdout);
+          getOutputChannel().appendLine(stderr);
+          if (stderr.length > 0) getOutputChannel().show(true);
+        } catch (e) {
+          getOutputChannel().appendLine(e.error);
+          getOutputChannel().appendLine(e.stdout);
+          getOutputChannel().appendLine(e.stderr);
+          getOutputChannel().show(true);
+        }
       }
       progress.report({ message: "Done.", increment: 100 });
       return new Promise(res => setTimeout(res, 2000));
